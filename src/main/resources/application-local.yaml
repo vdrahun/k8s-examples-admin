@@ -1,0 +1,19 @@
+spring:
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            admin:
+              - uri: http://localhost:${server.port}
+                metadata:
+                  management.context-path: ${management.endpoints.web.base-path}
+            application:
+              - uri: http://localhost:${monitored.application.port}
+                metadata:
+                  management.context-path: ${monitored.application.actuator-endpoint}
+
+monitored:
+  application:
+    port: 8080
+    actuator-endpoint: /admin
