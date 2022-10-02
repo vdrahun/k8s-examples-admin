@@ -17,7 +17,7 @@ spec:
         - values.yaml
       values: |
         ingress:
-          host: prod.localhost
+          host: admin.helm
     path: k8s/helm/admin
     repoURL: https://github.com/vdrahun/k8s-examples-admin.git
     targetRevision: HEAD
