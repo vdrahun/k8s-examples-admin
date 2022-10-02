@@ -1,0 +1,6 @@
+apiVersion: v2
+name: admin
+description: An example Helm chart for the admin application
+type: application
+version: 0.0.1
+appVersion: 1.0.0

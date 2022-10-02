@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "admin.fullname" . }}
+  labels:
+    {{- include "admin.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "admin.selectorLabels" .  | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "admin.labels" . | nindent 8 }}
+      annotations:
+        config/checksum: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 30
+      restartPolicy: Always
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.version }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              name: http
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+          env:
+            - name: SPRING_SECURITY_USER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "admin.fullname" . }}-secrets
+                  key: SECURITY_USERNAME
+            - name: SPRING_SECURITY_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "admin.fullname" . }}-secrets
+                  key: SECURITY_PASSWORD
+            - name: ACTUATOR_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "admin.fullname" . }}-secrets
+                  key: ACTUATOR_USERNAME
+            - name: ACTUATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "admin.fullname" . }}-secrets
+                  key: ACTUATOR_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: {{ include "admin.fullname" . }}-config
+          livenessProbe:
+            httpGet:
+              port: http
+              path: {{ .Values.service.liveness.path }}
+            initialDelaySeconds: {{ .Values.service.liveness.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.service.liveness.timeoutSeconds }}
+            periodSeconds: {{ .Values.service.liveness.periodSeconds }}
+            failureThreshold: {{ .Values.service.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              port: http
+              path: {{ .Values.service.readiness.path }}
+            initialDelaySeconds: {{ .Values.service.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.service.readiness.periodSeconds }}
+            failureThreshold: {{ .Values.service.readiness.failureThreshold }}

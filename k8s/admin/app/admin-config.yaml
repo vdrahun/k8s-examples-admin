@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: admin-config
+  namespace: library
+data:
+  SPRING_PROFILES_ACTIVE: "k8s"
+#  ADMIN_HOST: "http://svc-admin"
+#  SERVER_PORT: "8080"
+#  APPLICATION_HOST: "http://svc-library"
+#  MONITORED_APPLICATION_PORT: "8080"
+#  MONITORED_APPLICATION_ACTUATOR_ENDPOINT: "/admin"

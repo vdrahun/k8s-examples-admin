@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-admin
+  namespace: library
+  labels:
+    app: admin
+    tech-stack: springboot
+spec:
+  selector:
+    app: admin
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+  type: ClusterIP

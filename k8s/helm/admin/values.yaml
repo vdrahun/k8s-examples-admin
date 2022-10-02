@@ -1,0 +1,38 @@
+nameOverride: ""
+fullnameOverride: ""
+
+replicaCount: 1
+serviceAccountName: admin
+
+image:
+  repository: vitaly1990
+  name: com.xpinjection.admin
+  version: profile-local-v1
+
+resources:
+  requests:
+    cpu: 300m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+ingress:
+  enabled: true
+#  limitConnections: 10
+#  limitRps: 1
+  host: admin.helm
+
+service:
+  port: 8080
+  liveness:
+    path: /admin/health
+    initialDelaySeconds: 25
+    timeoutSeconds: 2
+    periodSeconds: 5
+    failureThreshold: 6
+  readiness:
+    path: /admin/health
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    failureThreshold: 3

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin
+  namespace: library
+  labels:
+    app: admin
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+    type: RollingUpdate
+  template:
+    metadata:
+      name: admin
+      annotations:
+        restart.count: "5"
+      labels:
+        app: admin
+    spec:
+      containers:
+        - name: admin
+          image: vitaly1990/com.xpinjection.admin:profile-local-v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          resources:
+            requests:
+              cpu: 300m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          env:
+            - name: SPRING_SECURITY_USER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: SECURITY_USERNAME
+            - name: SPRING_SECURITY_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: SECURITY_PASSWORD
+            - name: ACTUATOR_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: ACTUATOR_USERNAME
+            - name: ACTUATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: admin-secret
+                  key: ACTUATOR_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: admin-config
+          livenessProbe:
+            httpGet:
+              port: http
+              path: /admin/health
+            initialDelaySeconds: 20
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              port: http
+              path: /admin/health
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 3
+      restartPolicy: Always
+      serviceAccountName: admin
+  selector:
+    matchLabels:
+      app: admin
